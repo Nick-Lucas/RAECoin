@@ -1,0 +1,12 @@
+{
+  "name": "raecoin",
+  "version": "1.0.0",
+  "license": "Copyright RAECoin 2018",
+  "scripts": {
+    "start": "truffle development",
+    "test": "truffle test"
+  },
+  "devDependencies": {
+    "truffle": "^4.1.3"
+  }
+}

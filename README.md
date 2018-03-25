@@ -17,7 +17,7 @@
 
 ## TODO
 
-* Investigate implementation of ERC223 standard: https://github.com/Dexaran/ERC223-token-standard/tree/Recommended
+* Investigate implementation of ERC223 standard: https://github.com/Dexaran/ERC223-token-standard
 
 ## Bugs and Questions
 

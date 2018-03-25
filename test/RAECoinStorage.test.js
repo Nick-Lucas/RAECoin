@@ -1,96 +1,84 @@
 require("babel-polyfill")
-var RAECoinStorage = artifacts.require("./RAECoinStorage.sol")
+var RAECoin = artifacts.require("./RAECoin.sol")
+const BigNumber = require("bignumber.js")
 
-contract("RAECoinStorage", function(accounts) {
+const BIG_0 = new BigNumber(0)
+const decimalsMultiplier = new BigNumber(10).pow(18)
+const toCoinAmount = (value = 0) =>
+  new BigNumber(value).times(decimalsMultiplier)
+const COIN_SUPPLY = toCoinAmount(10 * 1000 * 1000)
+
+const bigEqual = (b1, b2) => assert.equal(b1.toNumber(), b2.toNumber())
+
+contract("RAECoin", function(accounts) {
   let rae
 
   beforeEach(async () => {
-    rae = await RAECoinStorage.new()
+    rae = await RAECoin.new()
   })
 
-  context("getBalance", () => {
+  context("balanceOf", () => {
     it("should give the first account 10m tokens", async () => {
-      const balance = await rae.getBalance.call(accounts[0], {
+      const balance = await rae.balanceOf.call(accounts[0], {
         from: accounts[0]
       })
-      assert.equal(balance, 10 * 1000 * 1000)
+      bigEqual(balance, COIN_SUPPLY)
     })
 
     it("should give another account 0 tokens", async () => {
-      const balance = await rae.getBalance.call(accounts[1], {
+      const balance = await rae.balanceOf.call(accounts[1], {
         from: accounts[0]
       })
-      assert.equal(balance, 0)
+      bigEqual(balance, BIG_0)
     })
 
     it("should allow balance access from any account", async () => {
-      const balance = await rae.getBalance.call(accounts[0], {
+      const balance = await rae.balanceOf.call(accounts[0], {
         from: accounts[1]
       })
-      assert.equal(balance, 10 * 1000 * 1000)
+      bigEqual(balance, COIN_SUPPLY)
     })
   })
 
-  context("transferBalance", () => {
-    it("should allow owner to transfer its balance", async () => {
-      const senderStartBalance = await rae.getBalance.call(accounts[0])
-      assert.equal(senderStartBalance, 10 * 1000 * 1000)
+  context("transfer", () => {
+    it("should allow account to transfer its balance", async () => {
+      const transferAmount = toCoinAmount(2500)
 
-      const receiverStartBalance = await rae.getBalance.call(accounts[1])
+      const senderStartBalance = await rae.balanceOf.call(accounts[0])
+      assert.equal(senderStartBalance.toNumber(), COIN_SUPPLY.toNumber())
+
+      const receiverStartBalance = await rae.balanceOf.call(accounts[1])
       assert.equal(receiverStartBalance, 0)
 
-      await rae.transferBalance(accounts[0], accounts[1], 2500, {
+      await rae.transfer(accounts[1], transferAmount, {
         from: accounts[0]
       })
 
-      const senderEndBalance = await rae.getBalance.call(accounts[0])
-      assert.equal(senderEndBalance, senderStartBalance - 2500)
+      const senderEndBalance = await rae.balanceOf.call(accounts[0])
+      bigEqual(senderEndBalance, COIN_SUPPLY.minus(transferAmount))
 
-      const receiverEndBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverEndBalance, 2500)
+      const receiverEndBalance = await rae.balanceOf.call(accounts[1])
+      bigEqual(receiverEndBalance, transferAmount)
     })
 
-    it("should allow owner to transfer a balance", async () => {
+    it("should reject transfer when the balance is too low", async () => {
+      const initialBalance = toCoinAmount(1000)
+      const transferAmount = toCoinAmount(1001)
+
       // Setup state
-      await rae.transferBalance(accounts[0], accounts[2], 10000, {
+      await rae.transfer(accounts[2], initialBalance, {
         from: accounts[0]
       })
 
       // Test
-      const senderStartBalance = await rae.getBalance.call(accounts[2], {
-        from: accounts[0]
-      })
-      assert.equal(senderStartBalance, 10000)
+      const senderStartBalance = await rae.balanceOf.call(accounts[2])
+      bigEqual(senderStartBalance, initialBalance)
 
-      const receiverStartBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverStartBalance, 0)
-
-      await rae.transferBalance(accounts[2], accounts[1], 10000, {
-        from: accounts[0]
-      })
-
-      const senderEndBalance = await rae.getBalance.call(accounts[2])
-      assert.equal(senderEndBalance, 0)
-
-      const receiverEndBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverEndBalance, 10000)
-    })
-
-    it("should reject non-owner from transferring even its own balances", async () => {
-      // Setup state
-      await rae.transferBalance(accounts[0], accounts[2], 10000, {
-        from: accounts[0]
-      })
-
-      // Test
-      const senderStartBalance = await rae.getBalance.call(accounts[2])
-      assert.equal(senderStartBalance, 10000)
-
-      const receiverStartBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverStartBalance, 0)
+      const receiverStartBalance = await rae.balanceOf.call(accounts[1])
+      bigEqual(receiverStartBalance, BIG_0)
 
       return rae
-        .transferBalance(accounts[2], accounts[1], 2500, {
+        .transfer(accounts[1], transferAmount, {
           from: accounts[2]
         })
         .then(
@@ -107,150 +95,29 @@ contract("RAECoinStorage", function(accounts) {
         )
     })
 
-    it("should reject transfer when the balance is too low", async () => {
+    it("should allow transfers of 0 amount", async () => {
       // Setup state
-      await rae.transferBalance(accounts[0], accounts[2], 1000, {
+      const initialBalance = toCoinAmount(1000)
+      await rae.transfer(accounts[2], initialBalance, {
         from: accounts[0]
       })
 
       // Test
-      const senderStartBalance = await rae.getBalance.call(accounts[2])
-      assert.equal(senderStartBalance, 1000)
+      const senderStartBalance = await rae.balanceOf.call(accounts[2])
+      bigEqual(senderStartBalance, initialBalance)
 
-      const receiverStartBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverStartBalance, 0)
+      const receiverStartBalance = await rae.balanceOf.call(accounts[1])
+      bigEqual(receiverStartBalance, BIG_0)
 
-      return rae
-        .transferBalance(accounts[2], accounts[1], 1001, {
-          from: accounts[0]
-        })
-        .then(
-          () => {
-            assert(false, "Transfer should have thrown")
-          },
-          e => {
-            assert.match(
-              e,
-              /VM Exception/,
-              "transfer should have raised VM exception"
-            )
-          }
-        )
-    })
-
-    it("should reject transfers of 0 amount", async () => {
-      // Setup state
-      await rae.transferBalance(accounts[0], accounts[2], 1000, {
-        from: accounts[0]
+      await rae.transfer(accounts[1], 0, {
+        from: accounts[2]
       })
 
-      // Test
-      const senderStartBalance = await rae.getBalance.call(accounts[2])
-      assert.equal(senderStartBalance, 1000)
+      const senderEndBalance = await rae.balanceOf.call(accounts[2])
+      bigEqual(senderEndBalance, initialBalance)
 
-      const receiverStartBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverStartBalance, 0)
-
-      return rae
-        .transferBalance(accounts[2], accounts[1], 0, {
-          from: accounts[0]
-        })
-        .then(
-          () => {
-            assert(false, "Transfer should have thrown")
-          },
-          e => {
-            assert.match(
-              e,
-              /VM Exception/,
-              "transfer should have raised VM exception"
-            )
-          }
-        )
+      const receiverEndBalance = await rae.balanceOf.call(accounts[1])
+      bigEqual(receiverEndBalance, BIG_0)
     })
   })
 })
-
-//
-//
-// it("should put 10000 MetaCoin in the first account", function() {
-//   return MetaCoin.deployed()
-//     .then(function(instance) {
-//       return instance.getBalance.call(accounts[0]);
-//     })
-//     .then(function(balance) {
-//       assert.equal(
-//         balance.valueOf(),
-//         10000,
-//         "10000 wasn't in the first account"
-//       );
-//     });
-// });
-// it("should call a function that depends on a linked library", function() {
-//   var meta;
-//   var metaCoinBalance;
-//   var metaCoinEthBalance;
-//   return MetaCoin.deployed()
-//     .then(function(instance) {
-//       meta = instance;
-//       return meta.getBalance.call(accounts[0]);
-//     })
-//     .then(function(outCoinBalance) {
-//       metaCoinBalance = outCoinBalance.toNumber();
-//       return meta.getBalanceInEth.call(accounts[0]);
-//     })
-//     .then(function(outCoinBalanceEth) {
-//       metaCoinEthBalance = outCoinBalanceEth.toNumber();
-//     })
-//     .then(function() {
-//       assert.equal(
-//         metaCoinEthBalance,
-//         2 * metaCoinBalance,
-//         "Library function returned unexpected function, linkage may be broken"
-//       );
-//     });
-// });
-// it("should send coin correctly", function() {
-//   var meta;
-//   // Get initial balances of first and second account.
-//   var account_one = accounts[0];
-//   var account_two = accounts[1];
-//   var account_one_starting_balance;
-//   var account_two_starting_balance;
-//   var account_one_ending_balance;
-//   var account_two_ending_balance;
-//   var amount = 10;
-//   return MetaCoin.deployed()
-//     .then(function(instance) {
-//       meta = instance;
-//       return meta.getBalance.call(account_one);
-//     })
-//     .then(function(balance) {
-//       account_one_starting_balance = balance.toNumber();
-//       return meta.getBalance.call(account_two);
-//     })
-//     .then(function(balance) {
-//       account_two_starting_balance = balance.toNumber();
-//       return meta.sendCoin(account_two, amount, { from: account_one });
-//     })
-//     .then(function() {
-//       return meta.getBalance.call(account_one);
-//     })
-//     .then(function(balance) {
-//       account_one_ending_balance = balance.toNumber();
-//       return meta.getBalance.call(account_two);
-//     })
-//     .then(function(balance) {
-//       account_two_ending_balance = balance.toNumber();
-//       assert.equal(
-//         account_one_ending_balance,
-//         account_one_starting_balance - amount,
-//         "Amount wasn't correctly taken from the sender"
-//       );
-//       assert.equal(
-//         account_two_ending_balance,
-//         account_two_starting_balance + amount,
-//         "Amount wasn't correctly sent to the receiver"
-//       );
-//     });
-// });

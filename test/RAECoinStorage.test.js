@@ -50,29 +50,93 @@ contract("RAECoinStorage", function(accounts) {
       assert.equal(receiverEndBalance, 2500)
     })
 
-    it("should allow non-owner to transfer its own balances", async () => {
+    it("should allow owner to transfer a balance", async () => {
+      // Setup state
       await rae.transferBalance(accounts[0], accounts[2], 10000, {
         from: accounts[0]
       })
 
+      // Test
+      const senderStartBalance = await rae.getBalance.call(accounts[2], {
+        from: accounts[0]
+      })
+      assert.equal(senderStartBalance, 10000)
+
+      const receiverStartBalance = await rae.getBalance.call(accounts[1])
+      assert.equal(receiverStartBalance, 0)
+
+      await rae.transferBalance(accounts[2], accounts[1], 10000, {
+        from: accounts[0]
+      })
+
+      const senderEndBalance = await rae.getBalance.call(accounts[2])
+      assert.equal(senderEndBalance, 0)
+
+      const receiverEndBalance = await rae.getBalance.call(accounts[1])
+      assert.equal(receiverEndBalance, 10000)
+    })
+
+    it("should reject non-owner from transferring even its own balances", async () => {
+      // Setup state
+      await rae.transferBalance(accounts[0], accounts[2], 10000, {
+        from: accounts[0]
+      })
+
+      // Test
       const senderStartBalance = await rae.getBalance.call(accounts[2])
       assert.equal(senderStartBalance, 10000)
 
       const receiverStartBalance = await rae.getBalance.call(accounts[1])
       assert.equal(receiverStartBalance, 0)
 
-      await rae.transferBalance(accounts[2], accounts[1], 2500, {
-        from: accounts[2]
-      })
-
-      const senderEndBalance = await rae.getBalance.call(accounts[2])
-      assert.equal(senderEndBalance, 7500)
-
-      const receiverEndBalance = await rae.getBalance.call(accounts[1])
-      assert.equal(receiverEndBalance, 2500)
+      return rae
+        .transferBalance(accounts[2], accounts[1], 2500, {
+          from: accounts[2]
+        })
+        .then(
+          () => {
+            assert(false, "Transfer should have thrown")
+          },
+          e => {
+            assert.match(
+              e,
+              /VM Exception/,
+              "transfer should have raised VM exception"
+            )
+          }
+        )
     })
 
-    it("should reject transfer when the balance is too low")
+    it("should reject transfer when the balance is too low", async () => {
+      // Setup state
+      await rae.transferBalance(accounts[0], accounts[2], 1000, {
+        from: accounts[0]
+      })
+
+      // Test
+      const senderStartBalance = await rae.getBalance.call(accounts[2])
+      assert.equal(senderStartBalance, 1000)
+
+      const receiverStartBalance = await rae.getBalance.call(accounts[1])
+      assert.equal(receiverStartBalance, 0)
+
+      return rae
+        .transferBalance(accounts[2], accounts[1], 1001, {
+          from: accounts[0]
+        })
+        .then(
+          () => {
+            assert(false, "Transfer should have thrown")
+          },
+          e => {
+            assert.match(
+              e,
+              /VM Exception/,
+              "transfer should have raised VM exception"
+            )
+          }
+        )
+    })
   })
 })
 

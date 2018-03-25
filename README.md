@@ -14,3 +14,8 @@
 #### Setup the app on a local ethereum network
 
 `$ yarn start`
+
+# Bugs and Questions
+
+* Currently the owner can transfer anyone's currency anywhere, is that acceptable or a potential trust issue?
+  * could resolve by enforcing that methods are called by the owner, but attaching the address of the true sender for validation

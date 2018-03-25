@@ -10,7 +10,6 @@ contract("RAECoinStorage", function(accounts) {
 
   context("getBalance", () => {
     it("should give the first account 10m tokens", async () => {
-      // const rae = await RAECoinStorage.deployed()
       const balance = await rae.getBalance.call(accounts[0], {
         from: accounts[0]
       })
@@ -18,7 +17,6 @@ contract("RAECoinStorage", function(accounts) {
     })
 
     it("should give another account 0 tokens", async () => {
-      // const rae = await RAECoinStorage.deployed()
       const balance = await rae.getBalance.call(accounts[1], {
         from: accounts[0]
       })
@@ -26,7 +24,6 @@ contract("RAECoinStorage", function(accounts) {
     })
 
     it("should allow balance access from any account", async () => {
-      // const rae = await RAECoinStorage.deployed()
       const balance = await rae.getBalance.call(accounts[0], {
         from: accounts[1]
       })
@@ -36,8 +33,6 @@ contract("RAECoinStorage", function(accounts) {
 
   context("transferBalance", () => {
     it("should allow owner to transfer its balance", async () => {
-      // const rae = await RAECoinStorage.deployed()
-
       const senderStartBalance = await rae.getBalance.call(accounts[0])
       assert.equal(senderStartBalance, 10 * 1000 * 1000)
 
@@ -56,7 +51,6 @@ contract("RAECoinStorage", function(accounts) {
     })
 
     it("should allow non-owner to transfer its own balances", async () => {
-      const rae = await RAECoinStorage.deployed()
       await rae.transferBalance(accounts[0], accounts[2], 10000, {
         from: accounts[0]
       })

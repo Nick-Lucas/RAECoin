@@ -137,6 +137,37 @@ contract("RAECoinStorage", function(accounts) {
           }
         )
     })
+
+    it("should reject transfers of 0 amount", async () => {
+      // Setup state
+      await rae.transferBalance(accounts[0], accounts[2], 1000, {
+        from: accounts[0]
+      })
+
+      // Test
+      const senderStartBalance = await rae.getBalance.call(accounts[2])
+      assert.equal(senderStartBalance, 1000)
+
+      const receiverStartBalance = await rae.getBalance.call(accounts[1])
+      assert.equal(receiverStartBalance, 0)
+
+      return rae
+        .transferBalance(accounts[2], accounts[1], 0, {
+          from: accounts[0]
+        })
+        .then(
+          () => {
+            assert(false, "Transfer should have thrown")
+          },
+          e => {
+            assert.match(
+              e,
+              /VM Exception/,
+              "transfer should have raised VM exception"
+            )
+          }
+        )
+    })
   })
 })
 

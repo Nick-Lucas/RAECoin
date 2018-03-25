@@ -14,12 +14,23 @@ contract RAECoinStorage {
         _;
     }
 
-    function getBalance(address _address) external view returns(uint) {
+    function getBalance(
+        address _address
+    ) 
+        external view returns(uint) 
+    {
         return balances[_address];
     }
 
-    function transferBalance(address _addressFrom, address _addressTo, uint amount) 
-    external protected {
+    function transferBalance(
+        address _addressFrom, 
+        address _addressTo, 
+        uint amount
+    ) 
+        external 
+        protected 
+    {
+        
         require(balances[_addressFrom] >= amount);
         require(balances[_addressTo] + amount > balances[_addressTo]);
 

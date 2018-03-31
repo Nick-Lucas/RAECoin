@@ -17,9 +17,6 @@
 
 ## TODO
 
-* Investigate implementation of ERC223 standard: https://github.com/Dexaran/ERC223-token-standard
-
-## Bugs and Questions
-
-* Currently the owner can transfer anyone's currency anywhere, is that acceptable or a potential trust issue?
-  * could resolve by enforcing that methods are called by the owner, but attaching the address of the true sender for validation
+* Finish tests on token
+* Strip out non-needed functions from tolen: minting, etc.
+* Write ICO contract prototype & tests

@@ -30,9 +30,6 @@ contract Token {
     bytes   data 
   );
 
-  // Ethereum Token
-  event Burn(address indexed from, uint256 amount);
-
   function Token( 
     uint256 initialSupply,
     string tokenName,
@@ -43,7 +40,7 @@ contract Token {
   {
     owner = msg.sender;
     
-    totalSupply = initialSupply * 10 ** uint256(decimalUnits);
+    totalSupply = initialSupply * (10 ** uint256(decimalUnits));
     balances[owner] = totalSupply;
 
     name = tokenName;
@@ -51,10 +48,15 @@ contract Token {
     symbol = tokenSymbol;
   }
 
-  function() public payable { revert(); } // does not accept money
+  // Prevent transfer of ether to contract
+  function() public payable { revert(); }
 
   // ERC20
-  function balanceOf(address _address) public constant returns (uint) {
+  function balanceOf(address _address) 
+  public 
+  constant 
+  returns (uint) 
+  {
     return balances[_address];
   }
 
@@ -69,21 +71,25 @@ contract Token {
   }
  
   // ERC20
-  function allowance(address _address, address spender) public constant
+  function allowance(address _address, address spender) 
+  public 
+  constant
   returns (uint256 remaining)
   {
     return allowances[_address][spender];
   }
 
   // ERC20
-  function transfer(address to, uint256 amount) public
+  function transfer(address to, uint256 amount) 
+  public
   {
     bytes memory empty;
     _transfer(msg.sender, to, amount, empty);
   }
 
   // ERC20
-  function transferFrom(address from, address to, uint256 amount) public
+  function transferFrom(address from, address to, uint256 amount) 
+  public
   returns (bool success)
   {
     require(amount <= allowances[from][msg.sender]);
@@ -111,33 +117,6 @@ contract Token {
       return true;
     }
     return false;
-  }        
-
-  // Ethereum Token
-  function burn(uint256 amount) public
-  returns (bool success)
-  {
-    require(balances[msg.sender] >= amount);
-    balances[msg.sender] -= amount;
-    totalSupply -= amount;
-
-    Burn(msg.sender, amount);
-    return true;
-  }
-
-  // Ethereum Token
-  function burnFrom(address from, uint256 amount) public
-  returns (bool success)
-  {
-    require(balances[from] >= amount);
-    require(amount <= allowances[from][msg.sender]);
-
-    balances[from] -= amount;
-    allowances[from][msg.sender] -= amount;
-    totalSupply -= amount;
-
-    Burn(from, amount);
-    return true;
   }
 
   // ERC223 Transfer and invoke specified callback
@@ -152,7 +131,7 @@ contract Token {
   {
     _transfer(msg.sender, to, amount, data);
 
-    if ( isContract(to) )
+    if (isContract(to))
     {
       IContractReceiver rx = IContractReceiver(to);
       require(
@@ -166,7 +145,8 @@ contract Token {
   }
 
   // ERC223 Transfer to a contract or externally-owned account
-  function transfer(address to, uint amount, bytes data) public
+  function transfer(address to, uint amount, bytes data) 
+  public
   returns (bool success)
   {
     if (isContract(to)) {
@@ -178,7 +158,8 @@ contract Token {
   }
 
   // ERC223 Transfer to contract and invoke tokenFallback() method
-  function transferToContract(address to, uint amount, bytes data) private
+  function transferToContract(address to, uint amount, bytes data) 
+  private
   returns (bool success)
   {
     _transfer(msg.sender, to, amount, data);
@@ -190,7 +171,10 @@ contract Token {
   }
 
   // ERC223 fetch contract size (must be nonzero to be a contract)
-  function isContract( address _addr ) private constant returns (bool)
+  function isContract( address _addr ) 
+  private 
+  constant 
+  returns (bool)
   {
     uint length;
     assembly { length := extcodesize(_addr) }

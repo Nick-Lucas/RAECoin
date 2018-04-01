@@ -207,7 +207,7 @@ contract Token {
   {
     require(to != 0x0);
     require(balances[from] >= amount);
-    require(balances[to] + amount > balances[to]);
+    require(balances[to] + amount >= balances[to]);
 
     balances[from] -= amount;
     balances[to] += amount;

@@ -48,9 +48,6 @@ contract Token {
     symbol = tokenSymbol;
   }
 
-  // Prevent transfer of ether to contract
-  function() public payable { revert(); }
-
   // ERC20
   function balanceOf(address _address) 
   public 

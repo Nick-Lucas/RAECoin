@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import "./ERC223/Token.sol";
+import "./ERC20/Token.sol";
 
 contract RAECoin is Token {
     function RAECoin() Token(

@@ -1,7 +1,7 @@
 {
   "name": "raecoin",
   "version": "1.0.0",
-  "license": "Copyright RAECoin 2018",
+  "license": "UNLICENSED",
   "scripts": {
     "start": "truffle development",
     "test": "truffle test"

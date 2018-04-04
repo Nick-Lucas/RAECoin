@@ -21,7 +21,7 @@ contract ICOController {
   }
 
   function () 
-  public
+  external
   payable 
   {
     address sender = msg.sender;

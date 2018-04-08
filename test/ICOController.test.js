@@ -20,7 +20,10 @@ contract("ICOController", function(accounts) {
   beforeEach(async () => {
     tokensPerEther = 200;
     rae = await RAECoin.new();
+
+    // Set up the ICO
     ico = await ICOController.new(rae.address, tokensPerEther);
+    rae.transfer(ico.address, toCoinAmount(5000000), { from: accounts[0] });
   });
 
   context("ICO partake", () => {
@@ -28,7 +31,12 @@ contract("ICOController", function(accounts) {
       const ownerBalance = await rae.balanceOf.call(accounts[0], {
         from: accounts[0]
       });
-      bigEqual(ownerBalance, COIN_SUPPLY);
+      bigEqual(ownerBalance, toCoinAmount(5000000));
+
+      const icoBalance = await rae.balanceOf.call(ico.address, {
+        from: ico.address
+      });
+      bigEqual(icoBalance, toCoinAmount(5000000));
 
       const senderBalance = await rae.balanceOf.call(accounts[1], {
         from: accounts[1]

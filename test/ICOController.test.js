@@ -52,19 +52,20 @@ contract("ICOController", function(accounts) {
     it("should pay me tokens at the exchange rate, when I send 1 Ethereum", async () => {
       await ico.sendTransaction({
         from: accounts[1],
+        gasPrice: 0,
         value: web3.toWei(1, "ether")
       });
 
-      // const ownerEthBalance = await web3.eth.getBalance(accounts[0]);
-      // const senderEthBalance = await web3.eth.getBalance(accounts[1]);
-      // bigEqual(ownerEthBalance, toCoinAmount(101));
-      // bigEqual(senderEthBalance, toCoinAmount(99));
+      const icoEthBalance = await web3.eth.getBalance(ico.address);
+      const investorEthBalance = await web3.eth.getBalance(accounts[1]);
+      bigEqual(icoEthBalance, toCoinAmount(1));
+      bigEqual(investorEthBalance, toCoinAmount(99));
 
-      // const expectedRaeTransfer = toCoinAmount(tokensPerEther);
-      // const ownerRaeBalance = await rae.balanceOf.call(accounts[0]);
-      // const senderRaeBalance = await rae.balanceOf.call(accounts[1]);
-      // bigEqual(ownerRaeBalance, COIN_SUPPLY - expectedRaeTransfer);
-      // bigEqual(senderRaeBalance, expectedRaeTransfer);
+      const expectedRaeTransfer = toCoinAmount(tokensPerEther);
+      const icoRaeBalance = await rae.balanceOf.call(ico.address);
+      const investorRaeBalance = await rae.balanceOf.call(accounts[1]);
+      bigEqual(icoRaeBalance, toCoinAmount(5000000).minus(expectedRaeTransfer));
+      bigEqual(investorRaeBalance, expectedRaeTransfer);
     });
   });
 });

@@ -45,11 +45,18 @@ contract("ICOController", function(accounts) {
 
       const ownerEthBalance = await web3.eth.getBalance(accounts[0]);
       const senderEthBalance = await web3.eth.getBalance(accounts[1]);
-      assert(ownerEthBalance.toNumber() > toCoinAmount(99).toNumber()); // gas costs for deployment
+      assert(
+        ownerEthBalance.toNumber() > toCoinAmount(99).toNumber(),
+        "Owner should still have basically all their Ether, minus deployment gas. Had: " +
+          ownerEthBalance.toNumber()
+      ); // gas costs for deployment
       bigEqual(senderEthBalance, toCoinAmount(100));
     });
 
     it("should pay me tokens at the exchange rate, when I send 1 Ethereum", async () => {
+      const exchangeRate = await ico.tokensPerEther.call();
+      assert.equal(exchangeRate.toNumber(), tokensPerEther);
+
       await ico.sendTransaction({
         from: accounts[1],
         gasPrice: 0,
@@ -64,6 +71,31 @@ contract("ICOController", function(accounts) {
       const expectedRaeTransfer = toCoinAmount(tokensPerEther);
       const icoRaeBalance = await rae.balanceOf.call(ico.address);
       const investorRaeBalance = await rae.balanceOf.call(accounts[1]);
+      bigEqual(icoRaeBalance, toCoinAmount(5000000).minus(expectedRaeTransfer));
+      bigEqual(investorRaeBalance, expectedRaeTransfer);
+    });
+
+    it("should pay me tokens at the exchange rate, when I set a new exchange rate", async () => {
+      const newExchangeRate = 351;
+      await ico.SetExchangeRate(new BigNumber(newExchangeRate));
+
+      const exchangeRate = await ico.tokensPerEther.call();
+      assert.equal(exchangeRate.toNumber(), newExchangeRate);
+
+      await ico.sendTransaction({
+        from: accounts[2],
+        gasPrice: 0,
+        value: web3.toWei(1, "ether")
+      });
+
+      const icoEthBalance = await web3.eth.getBalance(ico.address);
+      const investorEthBalance = await web3.eth.getBalance(accounts[2]);
+      bigEqual(icoEthBalance, toCoinAmount(1));
+      bigEqual(investorEthBalance, toCoinAmount(99));
+
+      const expectedRaeTransfer = toCoinAmount(newExchangeRate);
+      const icoRaeBalance = await rae.balanceOf.call(ico.address);
+      const investorRaeBalance = await rae.balanceOf.call(accounts[2]);
       bigEqual(icoRaeBalance, toCoinAmount(5000000).minus(expectedRaeTransfer));
       bigEqual(investorRaeBalance, expectedRaeTransfer);
     });

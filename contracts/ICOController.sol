@@ -6,11 +6,11 @@ contract ICOController {
   address public owner;
   address public raeAddress;
   
-  uint8 public tokensPerEther;
+  uint256 public tokensPerEther;
 
   event TokenExchanged(address investor, uint256 etherReceived, uint256 raeSent);
 
-  function ICOController(address _raeAddress, uint8 initialTokensPerEther)
+  function ICOController(address _raeAddress, uint256 initialTokensPerEther)
   public 
   {
     owner = msg.sender;
@@ -37,7 +37,7 @@ contract ICOController {
     emit TokenExchanged(sender, weiReceived, amount);
   }
 
-  function SetExchangeRate(uint8 newTokensPerEther) 
+  function SetExchangeRate(uint256 newTokensPerEther) 
   public
   justOwner 
   {

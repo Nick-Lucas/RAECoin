@@ -18,5 +18,6 @@
 ## TODO
 
 * Finish tests on token
-* Strip out non-needed functions from tolen: minting, etc.
-* Write ICO contract prototype & tests
+* Finish tests on ICO
+* How do we get Ether OFF the ICO contract?
+* Event on ICO Contract for when ICO is triggered

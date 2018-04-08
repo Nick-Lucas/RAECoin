@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.21;
 
 // Based on: 
 // https://theethereum.wiki/w/index.php/ERC20_Token_Standard
@@ -64,7 +64,7 @@ contract Token {
   returns (bool success)
   {
     allowances[msg.sender][spender] = amount;
-    Approval(msg.sender, spender, amount);
+    emit Approval(msg.sender, spender, amount);
     return true;
   }
  
@@ -113,6 +113,6 @@ contract Token {
     balances[from] -= amount;
     balances[to] += amount;
 
-    Transfer(from, to, amount);
+    emit Transfer(from, to, amount);
   }
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.21;
 
 import './RAECoin.sol';
 
@@ -7,6 +7,8 @@ contract ICOController {
   address public raeAddress;
   
   uint8 public tokensPerEther;
+
+  event TokenExchanged(address investor, uint256 etherReceived, uint256 raeSent);
 
   function ICOController(address _raeAddress, uint8 initialTokensPerEther)
   public 
@@ -31,6 +33,8 @@ contract ICOController {
     uint256 amount = weiReceived * tokensPerEther;
     bool success = RAECoin(raeAddress).transfer(sender, amount);
     require(success); // TODO: handle this better, maybe even return the ether?
+
+    emit TokenExchanged(sender, weiReceived, amount);
   }
 
   function SetExchangeRate(uint8 newTokensPerEther) 

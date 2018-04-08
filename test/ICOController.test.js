@@ -14,13 +14,13 @@ const bigEqual = (b1, b2) => assert.equal(b1.toNumber(), b2.toNumber());
 contract("ICOController", function(accounts) {
   let rae;
 
-  let tokensPerEther;
   let ico;
+  let tokensPerEther;
 
   beforeEach(async () => {
     tokensPerEther = 200;
     rae = await RAECoin.new();
-    ico = await ICOController.new(tokensPerEther);
+    ico = await ICOController.new(rae.address, tokensPerEther);
   });
 
   context("ICO partake", () => {
@@ -42,7 +42,10 @@ contract("ICOController", function(accounts) {
     });
 
     it("should pay me tokens at the exchange rate, when I send 1 Ethereum", async () => {
-      await ico.send({ value: web3.toWei(1, "ether"), from: accounts[1] });
+      await ico.sendTransaction({
+        from: accounts[1],
+        value: web3.toWei(1, "ether")
+      });
 
       // const ownerEthBalance = await web3.eth.getBalance(accounts[0]);
       // const senderEthBalance = await web3.eth.getBalance(accounts[1]);

@@ -75,6 +75,33 @@ contract("ICOController", function(accounts) {
       bigEqual(investorRaeBalance, expectedRaeTransfer);
     });
 
+    it("should fail and revert ether payment when I pay for more tokens than are remaining", async () => {
+      const ethAmount = web3.toWei(51, "ether")
+      
+      // First set the exchange rate so the account has enough ether to request too much RAE
+      const newExchangeRate = 200000;
+      await ico.SetExchangeRate(new BigNumber(newExchangeRate));
+
+      // Act
+      const expectedEthBalance = await web3.eth.getBalance(accounts[1]);
+      try {
+        await ico.sendTransaction({
+          from: accounts[3],
+          gasPrice: 0,
+          value: ethAmount
+        })
+      } catch (e) {
+        assert.match(
+          e,
+          /VM Exception/,
+          "transfer should have raised VM exception"
+        )
+      }
+      
+      const investorEthBalance = await web3.eth.getBalance(accounts[1]);
+      bigEqual(expectedEthBalance, investorEthBalance)
+    })
+
     it("should pay me tokens at the exchange rate, when I set a new exchange rate", async () => {
       const newExchangeRate = 351;
       await ico.SetExchangeRate(new BigNumber(newExchangeRate));
@@ -100,7 +127,7 @@ contract("ICOController", function(accounts) {
       bigEqual(investorRaeBalance, expectedRaeTransfer);
     });
 
-    it.only("should reject a change to the exchange rate when I am not the owner", async () => {
+    it("should reject a change to the exchange rate when I am not the owner", async () => {
       const newExchangeRate = 351;
       await ico.SetExchangeRate(new BigNumber(newExchangeRate), { from: accounts[1] })
         .then(

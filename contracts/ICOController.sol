@@ -32,7 +32,7 @@ contract ICOController {
 
     uint256 amount = weiReceived * tokensPerEther;
     bool success = RAECoin(raeAddress).transfer(sender, amount);
-    require(success); // TODO: handle this better, maybe even return the ether?
+    require(success);
 
     emit TokenExchanged(sender, weiReceived, amount);
   }

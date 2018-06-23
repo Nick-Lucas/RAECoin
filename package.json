@@ -12,6 +12,7 @@
     "truffle": "^4.1.12"
   },
   "dependencies": {
-    "bignumber.js": "git+https://github.com/frozeman/bignumber.js-nolookahead.git"
+    "bignumber.js": "git+https://github.com/frozeman/bignumber.js-nolookahead.git",
+    "solc": "^0.4.24"
   }
 }

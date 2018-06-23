@@ -1,6 +1,6 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.24;
 
-import './RAECoin.sol';
+import "./RAECoin.sol";
 
 contract ICOController {
   address public owner;
@@ -10,7 +10,7 @@ contract ICOController {
 
   event TokenExchanged(address investor, uint256 etherReceived, uint256 raeSent);
 
-  function ICOController(address _raeAddress, uint256 initialTokensPerEther)
+  constructor(address _raeAddress, uint256 initialTokensPerEther)
   public 
   {
     owner = msg.sender;

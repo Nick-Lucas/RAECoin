@@ -99,5 +99,22 @@ contract("ICOController", function(accounts) {
       bigEqual(icoRaeBalance, toCoinAmount(5000000).minus(expectedRaeTransfer));
       bigEqual(investorRaeBalance, expectedRaeTransfer);
     });
+
+    it.only("should reject a change to the exchange rate when I am not the owner", async () => {
+      const newExchangeRate = 351;
+      await ico.SetExchangeRate(new BigNumber(newExchangeRate), { from: accounts[1] })
+        .then(
+          () => {
+            assert(false, "Transfer should have thrown")
+          },
+          e => {
+            assert.match(
+              e,
+              /VM Exception/,
+              "transfer should have raised VM exception"
+            )
+          }
+        )
+    });
   });
 });

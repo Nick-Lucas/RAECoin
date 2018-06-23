@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.24;
 
 // Based on: 
 // https://theethereum.wiki/w/index.php/ERC20_Token_Standard
@@ -31,7 +31,7 @@ contract Token {
     uint256 amount
   );
 
-  function Token( 
+  constructor( 
     uint256 initialSupply,
     string tokenName,
     uint8 decimalUnits,
@@ -52,7 +52,7 @@ contract Token {
   // ERC20
   function balanceOf(address _address) 
   public 
-  constant 
+  view 
   returns (uint) 
   {
     return balances[_address];
@@ -64,14 +64,14 @@ contract Token {
   returns (bool success)
   {
     allowances[msg.sender][spender] = amount;
-    Approval(msg.sender, spender, amount);
+    emit Approval(msg.sender, spender, amount);
     return true;
   }
  
   // ERC20
   function allowance(address _address, address spender) 
   public 
-  constant
+  view
   returns (uint256 remaining)
   {
     return allowances[_address][spender];
@@ -113,6 +113,6 @@ contract Token {
     balances[from] -= amount;
     balances[to] += amount;
 
-    Transfer(from, to, amount);
+    emit Transfer(from, to, amount);
   }
 }
